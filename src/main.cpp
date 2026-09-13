@@ -5,6 +5,7 @@
 
 int sensorPin = A0;
 int val = 0;
+bool alarmRunning = true;
 
 void webhook(String id) {
 
@@ -48,16 +49,21 @@ void setup() {
     Serial.println();
 
     Serial.println("Connected!");
-
-    webhook(WEBHOOK_START);
+    if (val >= 1500) {
+        webhook(WEBHOOK_START);
+        Serial.println("Alarm started");
+    }
+    alarmRunning = true;
 
 }
 
 void loop() {
     val = analogRead(sensorPin);
     Serial.println(val);
-    if (val < 1500) {
+    if (val < 1500 && alarmRunning) {
         webhook(WEBHOOK_STOP);
+        Serial.println("Alarm stopped");
+        alarmRunning = false;
     }
     delay(200);
 }
