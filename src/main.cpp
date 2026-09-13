@@ -49,12 +49,15 @@ void setup() {
 
     Serial.println("Connected!");
 
-    webhook(WEBHOOK_STOP);
+    webhook(WEBHOOK_START);
 
 }
 
 void loop() {
     val = analogRead(sensorPin);
     Serial.println(val);
+    if (val < 1500) {
+        webhook(WEBHOOK_STOP);
+    }
     delay(200);
 }
