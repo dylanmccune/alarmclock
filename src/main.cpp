@@ -2,10 +2,13 @@
 #include <WiFi.h>
 #include <HTTPClient.h>
 #include "secrets.h"
+#include "time.h"
+
+const char* ntpServer = "pool.ntp.org";
 
 int sensorPin = A0;
 int val = 0;
-bool alarmRunning = true;
+bool alarmRunning = false;
 
 void webhook(String id) {
 
@@ -33,6 +36,16 @@ void webhook(String id) {
 
 }
 
+void printLocalTime(){
+  struct tm timeinfo;
+  if(!getLocalTime(&timeinfo)){
+    Serial.println("Failed to obtain time");
+    return;
+  }
+  Serial.println(&timeinfo, "%A, %B %d %Y %H:%M:%S");
+  
+}
+
 void setup() {
     Serial.begin(115200);
     delay(2000);
@@ -48,22 +61,30 @@ void setup() {
     }
     Serial.println();
 
-    Serial.println("Connected!");
-    if (val >= 1500) {
-        webhook(WEBHOOK_START);
-        Serial.println("Alarm started");
-    }
-    alarmRunning = true;
+    Serial.println("Setting clock...");
+    configTzTime("PST8PDT,M3.2.0,M11.1.0", ntpServer);
+    printLocalTime();
+
+    Serial.println("Connected!");    
 
 }
 
 void loop() {
     val = analogRead(sensorPin);
-    Serial.println(val);
+    struct tm timeinfo;
+    if (getLocalTime(&timeinfo)) {
+        if (timeinfo.tm_hour == 7 && timeinfo.tm_min == 0 && !alarmRunning) {
+            webhook(WEBHOOK_START);
+            alarmRunning = true;
+        }
+        if (alarmRunning && (timeinfo.tm_hour > 7 || (timeinfo.tm_hour == 7 && timeinfo.tm_min >= 10))) {
+            webhook(WEBHOOK_STOP);
+            alarmRunning = false;
+        }
+    }
     if (val < 1500 && alarmRunning) {
         webhook(WEBHOOK_STOP);
-        Serial.println("Alarm stopped");
         alarmRunning = false;
     }
-    delay(200);
+    delay(100);
 }
