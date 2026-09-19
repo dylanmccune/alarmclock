@@ -1,19 +1,26 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <WebServer.h>
+#include <AutoConnect.h>
 #include "secrets.h"
 #include "config.h"
 #include "time.h"
 
+WebServer server(80);
+AutoConnect portal(server);
 
 int val = 0;
 bool alarmRunning = false;
 
 void webhook(String id) {
+  Serial.println("webhook");
 
+  WiFiClient client;
   HTTPClient http;
 
-  http.begin(String(HA_IP) + "/api/webhook/" + id);
+  http.begin(client, String(HA_IP) + "/api/webhook/" + id);
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
   int httpCode = http.POST("");
@@ -50,6 +57,11 @@ void setup() {
     delay(2000);
     pinMode(sensorPin, INPUT);
     analogSetAttenuation(ADC_11db);
+    
+    AutoConnectConfig config;
+    portal.config(config);
+    portal.begin();
+    Serial.println("IP: " + WiFi.localIP().toString());
 
     if (ALARM_TIMEOUT_MIN > 60) {
           Serial.println("Alarm timeout cannot be over an hour. Please change ALARM_TIMEOUT_MIN in config.h");
@@ -71,26 +83,16 @@ void setup() {
           delay(1000);
         }
       }
-    
-    
-    WiFi.begin(WIFI_SSID, WIFI_PASSWORD);
-
-    Serial.print("Wifi connecting");
-    while (WiFi.status() != WL_CONNECTED) {
-         Serial.print('.');
-         delay(500);
-    }
-    Serial.println();
 
     Serial.println("Setting clock...");
     configTzTime(TZ, ntpServer);
     printLocalTime();
 
-    Serial.println("Connected!");    
-
 }
 
 void loop() {
+    portal.handleClient();
+    delay(10);
     val = analogRead(sensorPin);
     struct tm timeinfo;
     if (getLocalTime(&timeinfo)) {
