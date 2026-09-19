@@ -1,0 +1,43 @@
+alias: alarm on
+triggers:
+  - entity_id: input_boolean.alarm_playing
+    to: 'on'
+    trigger: state
+  - trigger: webhook
+    allowed_methods:
+      - POST
+      - PUT
+    local_only: true
+    webhook_id: [WEBHOOK_ID]
+actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    target:
+      entity_id: input_boolean.alarm_playing
+    data: {}
+  - action: media_player.volume_set
+    target:
+      entity_id: media_player.[ECHO_ID]
+    data:
+      volume_level: 0.5
+  - action: media_player.select_source
+    metadata: {}
+    target:
+      entity_id: media_player.[SPOTIFY_ID]
+    data:
+      source: Dylan's Echo
+  - action: media_player.play_media
+    target:
+      entity_id: media_player.[SPOTIFY_ID]
+    data:
+      media:
+        media_content_id: spotify:track:1hy7FfhaIcw4FjA9ZaE1Am
+        media_content_type: music
+        metadata: {}
+  - action: media_player.repeat_set
+    target:
+      entity_id: media_player.[SPOTIFY_ID]
+    data:
+      repeat: one
+mode: single
+description: ''
