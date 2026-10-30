@@ -14,9 +14,17 @@ AutoConnect portal(server);
 int val = 0;
 bool alarmRunning = false;
 
+int lastAlarmStart;
+
 void startAlarm()
 {
-  Serial.println("Alarm started");
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo))
+  {
+    return;
+  }
+  lastAlarmStart = timeinfo.tm_yday;
+  Serial.println(alarmRunning);
   alarmRunning = true;
   // voicemonkey api
   // either a loop here to keep checking if it's still playing or put that in some other script, oh also could be in main loop
@@ -24,7 +32,7 @@ void startAlarm()
 
 void stopAlarm()
 {
-  Serial.println("Alarm stopped");
+  Serial.println(alarmRunning);
   alarmRunning = false;
   // spotify api
 }
@@ -114,13 +122,13 @@ int startSecs()
 bool shouldStartAlarm()
 {
   val = analogRead(sensorPin);
-  return secsSinceMidnight() > startSecs() && !alarmRunning && val <= TRIGGER_THRESHOLD;
+  return secsSinceMidnight() > startSecs() && !alarmRunning && val <= TRIGGER_THRESHOLD && !lastAlarmStart == (struct tm) {0}.tm_yday;
 }
 
 bool shouldStopAlarm()
 {
   val = analogRead(sensorPin);
-  return secsSinceMidnight() > startSecs() + ALARM_TIMEOUT_MIN * 60 || alarmRunning && val > TRIGGER_THRESHOLD;
+  return alarmRunning && (secsSinceMidnight() > startSecs() + ALARM_TIMEOUT_MIN * 60 || val > TRIGGER_THRESHOLD);
 }
 
 bool musicPlaying()
