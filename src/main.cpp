@@ -24,7 +24,7 @@ void startAlarm()
     return;
   }
   lastAlarmStart = timeinfo.tm_yday;
-  Serial.println(alarmRunning);
+  Serial.println("Starting alarm");
   alarmRunning = true;
   // voicemonkey api
   // either a loop here to keep checking if it's still playing or put that in some other script, oh also could be in main loop
@@ -32,7 +32,7 @@ void startAlarm()
 
 void stopAlarm()
 {
-  Serial.println(alarmRunning);
+  Serial.println("Stopping alarm");
   alarmRunning = false;
   // spotify api
 }
@@ -122,13 +122,24 @@ int startSecs()
 bool shouldStartAlarm()
 {
   val = analogRead(sensorPin);
-  return secsSinceMidnight() > startSecs() && !alarmRunning && val <= TRIGGER_THRESHOLD && !lastAlarmStart == (struct tm) {0}.tm_yday;
+  struct tm timeinfo;
+  if (!getLocalTime(&timeinfo))
+  {
+    return false;
+  }
+  if (DEBUG == true) {
+    Serial.println("Sensor value: " + String(val));
+    Serial.println(alarmRunning);
+    Serial.println(lastAlarmStart);
+    return !alarmRunning && val <= TRIGGER_THRESHOLD && lastAlarmStart != timeinfo.tm_yday;
+  }
+  return secsSinceMidnight() > startSecs() && !alarmRunning && val >= TRIGGER_THRESHOLD && lastAlarmStart != timeinfo.tm_yday;
 }
 
 bool shouldStopAlarm()
 {
   val = analogRead(sensorPin);
-  return alarmRunning && (secsSinceMidnight() > startSecs() + ALARM_TIMEOUT_MIN * 60 || val > TRIGGER_THRESHOLD);
+  return alarmRunning && (secsSinceMidnight() > startSecs() + ALARM_TIMEOUT_MIN * 60 || val < TRIGGER_THRESHOLD);
 }
 
 bool musicPlaying()

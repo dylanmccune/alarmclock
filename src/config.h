@@ -8,13 +8,15 @@ int sensorPin = A0;
 // Sets it to PST with daylight savings time. 
 // See https://github.com/nayarsystems/posix_tz_db/blob/master/zones.csv for the full lisst
 const char* TZ = "PST8PDT,M3.2.0,M11.1.0";
-const int START_HOUR   = 07;
-const int START_MINUTE = 00;
-const int START_SECOND = 00;
+const int START_HOUR   = 19;
+const int START_MINUTE = 33;
+const int START_SECOND = 40;
 
 const int ALARM_TIMEOUT_MIN = 10; // Alarm timeout in minutes. Must be less than 60
 
-const int TRIGGER_THRESHOLD = 1500;
+const int TRIGGER_THRESHOLD = 2000;
+
+const bool DEBUG = false;
 // Photoresistor trigger threshold (0-4095). Lower values make it more sensitive.
 
 #endif
