@@ -16,6 +16,8 @@ bool alarmRunning = false;
 
 int lastAlarmStart;
 
+void webhook(String url);
+
 void startAlarm()
 {
   struct tm timeinfo;
@@ -26,7 +28,7 @@ void startAlarm()
   lastAlarmStart = timeinfo.tm_yday;
   Serial.println("Starting alarm");
   alarmRunning = true;
-  // voicemonkey api
+  webhook(VOICEMONKEY_ENDPOINT);
   // either a loop here to keep checking if it's still playing or put that in some other script, oh also could be in main loop
 }
 
@@ -37,14 +39,14 @@ void stopAlarm()
   // spotify api
 }
 
-void webhook(String id)
+void webhook(String url)
 {
   Serial.println("webhook");
 
   WiFiClient client;
   HTTPClient http;
 
-  http.begin(client, String(HA_IP) + "/api/webhook/" + id);
+  http.begin(client, url);
   http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
   int httpCode = http.POST("");
