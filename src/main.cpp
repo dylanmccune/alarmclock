@@ -4,12 +4,14 @@
 #include <ArduinoJson.h>
 #include <WebServer.h>
 #include <AutoConnect.h>
+#include <SpotifyEsp32.h>
 #include "secrets.h"
 #include "config.h"
 #include "time.h"
 
 WebServer server(80);
 AutoConnect portal(server);
+Spotify sp(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET);
 
 int val = 0;
 bool alarmRunning = false;
@@ -129,7 +131,8 @@ bool shouldStartAlarm()
   {
     return false;
   }
-  if (DEBUG == true) {
+  if (DEBUG == true)
+  {
     Serial.println("Sensor value: " + String(val));
     Serial.println(alarmRunning);
     Serial.println(lastAlarmStart);
@@ -168,6 +171,13 @@ void setup()
   portal.config(config);
   portal.begin();
   Serial.println("IP: " + WiFi.localIP().toString());
+
+  sp.begin();
+  while (!sp.is_auth())
+  {
+    sp.handle_client();
+  }
+  Serial.printf("Authenticated! Refresh token: %s\n", sp.get_user_tokens().refresh_token);
 
   Serial.println("Setting clock...");
   configTzTime(TZ, ntpServer);
