@@ -33,7 +33,6 @@ void startAlarm()
   Serial.println("Starting alarm");
   alarmRunning = true;
   webhook(VOICEMONKEY_ENDPOINT);
-  // either a loop here to keep checking if it's still playing or put that in some other script, oh also could be in main loop
 }
 
 void stopAlarm()
@@ -45,7 +44,7 @@ void stopAlarm()
 
 void webhook(String url)
 {
-  Serial.println("webhook");
+  Serial.println("Webhook:");
 
   WiFiClient client;
   HTTPClient http;
@@ -67,6 +66,7 @@ void webhook(String url)
     {
       // HTTP header has been send and Server response header has been handled
       Serial.printf("[HTTP] POST... code: %d\n", httpCode);
+      Serial.println(http.getString());
     }
   }
   else
@@ -233,11 +233,19 @@ void loop()
   if (shouldStartAlarm())
   {
     startAlarm();
+    delay(3000);
   }
 
   if (shouldStopAlarm())
   {
     stopAlarm();
+  }
+
+  if (alarmRunning && !musicPlaying())
+  {
+    Serial.println("Oooh someone stopped the music! DON'T DO THAT!");
+    sp->start_a_users_playback();
+    delay(1000);
   }
 
   delay(100);
