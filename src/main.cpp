@@ -18,6 +18,7 @@ bool alarmRunning = false;
 
 int lastAlarmStart = -1;
 unsigned long alarmStartMillis;
+unsigned long lastSpotifyCheck;
 
 void webhook(String url);
 Preferences preferences;
@@ -243,11 +244,14 @@ void loop()
     stopAlarm();
   }
 
-  if (alarmRunning && !musicPlaying())
+  if (alarmRunning && millis() - lastSpotifyCheck > 10000)
   {
-    Serial.println("Oooh someone stopped the music! DON'T DO THAT!");
-    sp->start_a_users_playback();
-    delay(1000);
+    lastSpotifyCheck = millis();
+    if (!musicPlaying())
+    {
+      Serial.println("Oooh someone stopped the music! DON'T DO THAT!");
+      sp->start_a_users_playback();
+    }
   }
 
   delay(100);
