@@ -149,7 +149,7 @@ bool shouldStopAlarm()
 
 bool musicPlaying()
 {
-  // some sort of spotify api thing, todo
+
   return false;
 }
 void setup()
@@ -166,22 +166,35 @@ void setup()
       delay(1000);
     }
   }
+  Serial.println("Setting clock...");
+  configTzTime(TZ, ntpServer);
+  printLocalTime();
 
   AutoConnectConfig config;
   portal.config(config);
   portal.begin();
   Serial.println("IP: " + WiFi.localIP().toString());
+  sp.set_log_level(SPOTIFY_LOG_DEBUG);
 
   sp.begin();
   while (!sp.is_auth())
   {
     sp.handle_client();
   }
-  Serial.printf("Authenticated! Refresh token: %s\n", sp.get_user_tokens().refresh_token);
 
-  Serial.println("Setting clock...");
-  configTzTime(TZ, ntpServer);
-  printLocalTime();
+  if (!sp.has_access_token())
+  {
+    Serial.println("Spotify authentication completed, but access-token acquisition failed.");
+    while (true)
+    {
+      delay(1000);
+    }
+  }
+
+  Serial.printf("Authenticated! Refresh token: %s\n", sp.get_user_tokens().refresh_token);
+  Serial.println("Has auth: " + String(sp.is_auth()));
+  Serial.println("Has access token:" + String(sp.has_access_token()));
+  print_response(sp.get_currently_playing_track());
 }
 
 void loop()
