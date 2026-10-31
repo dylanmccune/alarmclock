@@ -17,6 +17,7 @@ int val = 0;
 bool alarmRunning = false;
 
 int lastAlarmStart;
+unsigned long alarmStartMillis;
 
 void webhook(String url);
 Preferences preferences;
@@ -30,6 +31,7 @@ void startAlarm()
     return;
   }
   lastAlarmStart = timeinfo.tm_yday;
+  alarmStartMillis = millis();
   Serial.println("Starting alarm");
   alarmRunning = true;
   webhook(VOICEMONKEY_ENDPOINT);
@@ -146,7 +148,7 @@ bool shouldStartAlarm()
 bool shouldStopAlarm()
 {
   val = analogRead(sensorPin);
-  return alarmRunning && (secsSinceMidnight() > startSecs() + ALARM_TIMEOUT_MIN * 60 || val < TRIGGER_THRESHOLD);
+  return alarmRunning && (millis() - alarmStartMillis >= ALARM_TIMEOUT_MIN * 60000UL || val < TRIGGER_THRESHOLD);
 }
 
 bool musicPlaying()
