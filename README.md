@@ -17,7 +17,7 @@ You need these:
 Open the Voicemonkey dashboard (app.voicemonkey.io), and click "manage routines". Then, create a new routine, set the name to "alarm clock start", and click create trigger. After that, head to Webhooks on the sidebar, click the green new webhook button, and set the action type to routine trigger and the device to the trigger you just made. After that, it'll give you a webhook url. Save this for later.
 
 After that, open up the Alexa app and create a new routine with the voicemonkey trigger and set the action to play your chosen song on Spotify. I set it to use a playlist so I can change the song directly in the Spotify app, and add multiple songs to pick between.
-!(Screenshot of the Alexa app)[./media/6DA885D5-5814-48B5-BA76-D32182BE152B.jpeg]
+![Screenshot of the Alexa app](./media/6DA885D5-5814-48B5-BA76-D32182BE152B.jpeg)
 
 Finally, open the Spotify developer dashboard (https://developer.spotify.com/dashboard) and create a new app. Name it whatever you want, and set the redirect URI to https://spesp32.finianlandes.workers.dev/api/spotify/callback.
 
