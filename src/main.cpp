@@ -97,6 +97,9 @@ bool checkConfig()
   {
     Serial.println("Alarm timeout cannot be over an hour. Please change ALARM_TIMEOUT_MIN in config.h");
     return false;
+  } else if (ALARM_TIMEOUT_MIN < 0) {
+    Serial.println("Alarm timeout cannot be negative. Please change ALARM_TIMEOUT_MIN in config.h");
+    return false;
   }
 
   if (START_HOUR > 23 || START_HOUR < 0 || START_MINUTE > 59 || START_MINUTE < 0 || START_SECOND > 59 || START_SECOND < 0)
