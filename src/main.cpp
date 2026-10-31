@@ -5,13 +5,13 @@
 #include <WebServer.h>
 #include <AutoConnect.h>
 #include <SpotifyEsp32.h>
+#include <Preferences.h>
 #include "secrets.h"
 #include "config.h"
 #include "time.h"
 
 WebServer server(80);
 AutoConnect portal(server);
-Spotify sp(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET);
 
 int val = 0;
 bool alarmRunning = false;
@@ -19,6 +19,8 @@ bool alarmRunning = false;
 int lastAlarmStart;
 
 void webhook(String url);
+Preferences preferences;
+Spotify *sp = nullptr;
 
 void startAlarm()
 {
@@ -37,8 +39,8 @@ void startAlarm()
 void stopAlarm()
 {
   Serial.println("Stopping alarm");
+  sp->pause_playback();
   alarmRunning = false;
-  // spotify api
 }
 
 void webhook(String url)
@@ -149,12 +151,18 @@ bool shouldStopAlarm()
 
 bool musicPlaying()
 {
-
+  JsonDocument currentSong = sp->get_currently_playing_track().reply;
+  if (currentSong["is_playing"] == true)
+  {
+    return true;
+  }
   return false;
 }
 void setup()
 {
   Serial.begin(115200);
+  preferences.begin("alarmclock", false);
+  String refreshToken = preferences.getString("refresh_token", "");
   delay(2000);
   pinMode(sensorPin, INPUT);
   analogSetAttenuation(ADC_11db);
@@ -166,23 +174,44 @@ void setup()
       delay(1000);
     }
   }
-  Serial.println("Setting clock...");
-  configTzTime(TZ, ntpServer);
-  printLocalTime();
 
   AutoConnectConfig config;
   portal.config(config);
   portal.begin();
   Serial.println("IP: " + WiFi.localIP().toString());
-  sp.set_log_level(SPOTIFY_LOG_DEBUG);
 
-  sp.begin();
-  while (!sp.is_auth())
+  Serial.println("Setting clock...");
+  configTzTime(TZ, ntpServer);
+  printLocalTime();
+
+  if (!refreshToken.equals(""))
   {
-    sp.handle_client();
+    sp = new Spotify(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET, refreshToken.c_str());
+  }
+  else
+  {
+    sp = new Spotify(SPOTIFY_CLIENT_ID, SPOTIFY_CLIENT_SECRET);
   }
 
-  if (!sp.has_access_token())
+  if (DEBUG)
+  {
+    sp->set_log_level(SPOTIFY_LOG_DEBUG);
+  }
+
+  sp->begin();
+
+  while (!sp->is_auth())
+  {
+    sp->handle_client();
+  }
+
+  if (sp->has_access_token())
+  {
+    Serial.println("Saving access token to preferences");
+    refreshToken = sp->get_user_tokens().refresh_token;
+    preferences.putString("refresh_token", refreshToken);
+  }
+  else
   {
     Serial.println("Spotify authentication completed, but access-token acquisition failed.");
     while (true)
@@ -191,10 +220,10 @@ void setup()
     }
   }
 
-  Serial.printf("Authenticated! Refresh token: %s\n", sp.get_user_tokens().refresh_token);
-  Serial.println("Has auth: " + String(sp.is_auth()));
-  Serial.println("Has access token:" + String(sp.has_access_token()));
-  print_response(sp.get_currently_playing_track());
+  Serial.printf("Authenticated! Refresh token: %s\n", sp->get_user_tokens().refresh_token);
+  Serial.println("Has auth: " + String(sp->is_auth()));
+  Serial.println("Has access token:" + String(sp->has_access_token()));
+  Serial.println(musicPlaying());
 }
 
 void loop()
