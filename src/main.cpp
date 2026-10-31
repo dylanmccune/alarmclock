@@ -16,7 +16,7 @@ AutoConnect portal(server);
 int val = 0;
 bool alarmRunning = false;
 
-int lastAlarmStart;
+int lastAlarmStart = -1;
 unsigned long alarmStartMillis;
 
 void webhook(String url);
