@@ -1,6 +1,9 @@
 # Wakey Wakey (an alarm clock) 
 I made this project because I currently use my Alexa as an alarm clock in the mornings, but the problem with that is I can just tell it to stop without getting out of bed and fall right asleep. This aims to fix that problem by forcing me to get up and turn on the lights to make it stop.
 
+## Video demo
+![Video demo](./media/IMG_4980.mp4)
+
 ## Hardware
 The physical hardware is based off a Seeed Xiao ESP32C3 module and a regular photoresistor. Mine has it soldered to pin A0 but you can change that in the config.
 
